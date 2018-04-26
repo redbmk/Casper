@@ -1,0 +1,79 @@
+<div id="app">
+    <div class="client-projects" v-for="([client, projects]) in clients" :key="client.id">
+        <a v-if="client.id" class="site-title" v-bind:href="`/tag/${client.slug}/`">
+            {{client.name}}
+        </a>
+        <h1 v-else class="site-title">{{client.name}}</h1>
+        <div class="post-feed">
+            <article
+                class="post-card"
+                v-for="([project, posts]) in projects"
+                v-bind:class="{ 'no-image': !project.feature_image }"
+                :key="project.id"
+            >
+                <a
+                    class="post-card-image-link"
+                    v-if="project.feature_image"
+                    v-bind:href="project.url"
+                >
+                    <div
+                        class="post-card-image"
+                        v-bind:style="{ backgroundImage: `url(${project.feature_image})` }"
+                    >
+                    </div>
+                </a>
+                <div class="post-card-content">
+                    <a class="post-card-content-link" v-bind:href="project.url">
+                        <header class="post-card-header">
+                            <span v-if="project.project_tag" class="post-card-tags">
+                                {{project.project_tag.name}}
+                            </span>
+                            <h2 class="post-card-title">{{project.title}}</h2>
+                        </header>
+                        <section class="post-card-excerpt">
+                            <p>{{project.excerpt}}</p>
+                        </section>
+                    </a>
+                    <a
+                        class="post-card-content-link"
+                        v-for="post in posts"
+                        v-bind:href="post.url"
+                    >
+                        <header class="post-card-header">
+                            <span class="post-card-tags">{{post.title}}</span>
+                        </header>
+                        <section class="post-card-excerpt">
+                            <p>{{post.excerpt}}</p>
+                        </section>
+                    </a>
+                    <footer class="post-card-meta">
+                        <ul class="author-list">
+                            <li class="author-list-item" v-for="author in project.authors">
+                                <div class="author-name-tooltip">{{author.name}}</div>
+                                <a
+                                     class="static-avatar"
+                                     v-bind:class="{ 'author-profile-image': !author.profile_image }"
+                                     v-bind:href="`/author/${author.slug}/`"
+                                >
+                                    <img
+                                        v-if="author.profile_image"
+                                        class="author-profile-image"
+                                        v-bind:src="author.profile_image"
+                                        v-bind:alt="author.name"
+                                    />
+                                    <svg v-else viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <g fill="none" fill-rule="evenodd">
+                                            <path d="M3.513 18.998C4.749 15.504 8.082 13 12 13s7.251 2.504 8.487 5.998C18.47 21.442 15.417 23 12 23s-6.47-1.558-8.487-4.002zM12 12c2.21 0 4-2.79 4-5s-1.79-4-4-4-4 1.79-4 4 1.79 5 4 5z" fill="#FFF" />
+                                        </g>
+                                    </svg>
+                                </a>
+
+                            </li>
+                        </ul>
+                    </footer>
+                </div>
+            </article>
+        </div>
+    </div>
+    <h1 class="site-title">Individual Posts</h1>
+</div>

@@ -91,9 +91,9 @@ body {
 /* ---------------------------------------------------------- */
 
 @media (min-width: 900px) {
-    .home-template .post-feed,
-    .tag-template .post-feed,
-    .author-template .post-feed {
+    .home-template .post-feed:first-child,
+    .tag-template .post-feed:first-child,
+    .author-template .post-feed:first-child {
         margin-top: -70px;
         padding-top: 0;
     }
@@ -2143,4 +2143,31 @@ Usage (In Ghost editor):
     .site-footer-nav a:first-child {
         margin-left: 0;
     }
+}
+
+/* 12. Authors
+/* ---------------------------------------------------------- */
+
+.client-projects .post-card {
+    min-height: auto;
+    min-width: 100%;
+}
+
+.client-projects:first-child {
+    margin-top: 4vw;
+}
+
+.client-projects .post-card-excerpt:not(:last-child) p {
+    margin: 0;
+}
+
+.client-projects .post-card-content-link .post-card-header,
+.client-projects .post-card-content-link .post-card-tags {
+    transition: color 0.3s;
+}
+
+.client-projects .post-card-image-link[href]:hover + .post-card-content > .post-card-content-link[href]:first-child .post-card-header,
+.client-projects .post-card-content-link[href]:hover .post-card-header,
+.client-projects .post-card-content-link[href]:hover .post-card-tags {
+    color: #26a8ed;
 }
