@@ -92,7 +92,10 @@ $(function ($) {
             var posts = parse.querySelectorAll('.post');
             if (posts.length) {
                 [].forEach.call(posts, function (post) {
-                    $result[0].appendChild(post);
+                    var postHref = $('.post-card-content-link', post).attr('href');
+                    if (!$('.post-card-content-link[href="' + postHref + '"]').length) {
+                        $result[0].appendChild(post);
+                    }
                 });
             }
         }).fail(function (xhr) {

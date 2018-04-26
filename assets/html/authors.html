@@ -24,27 +24,37 @@
                 </a>
                 <div class="post-card-content">
                     <a class="post-card-content-link" v-bind:href="project.url">
-                        <header class="post-card-header">
-                            <span v-if="project.project_tag" class="post-card-tags">
-                                {{project.project_tag.name}}
-                            </span>
-                            <h2 class="post-card-title">{{project.title}}</h2>
-                        </header>
-                        <section class="post-card-excerpt">
-                            <p>{{project.excerpt}}</p>
-                        </section>
+                        <div class="post-card-content-text">
+                            <header class="post-card-header">
+                                <span v-if="project.project_tag" class="post-card-tags">
+                                    {{project.project_tag.name}}
+                                </span>
+                                <h2 class="post-card-title">{{project.title}}</h2>
+                            </header>
+                            <section class="post-card-excerpt">
+                                <p>{{project.excerpt}}</p>
+                            </section>
+                        </div>
                     </a>
                     <a
                         class="post-card-content-link"
                         v-for="post in posts"
                         v-bind:href="post.url"
                     >
-                        <header class="post-card-header">
-                            <span class="post-card-tags">{{post.title}}</span>
-                        </header>
-                        <section class="post-card-excerpt">
-                            <p>{{post.excerpt}}</p>
-                        </section>
+                        <div
+                            class="post-card-image"
+                            v-if="post.feature_image"
+                            v-bind:style="{ backgroundImage: `url(${post.feature_image})` }"
+                        >
+                        </div>
+                        <div class="post-card-content-text">
+                            <header class="post-card-header">
+                                <span class="post-card-tags">{{post.title}}</span>
+                            </header>
+                            <section class="post-card-excerpt">
+                                <p>{{post.excerpt}}</p>
+                            </section>
+                        </div>
                     </a>
                     <footer class="post-card-meta">
                         <ul class="author-list">
@@ -75,5 +85,5 @@
             </article>
         </div>
     </div>
-    <h1 class="site-title">Individual Posts</h1>
+    <h1 v-if="hasExtraPosts" class="site-title">Individual Posts</h1>
 </div>

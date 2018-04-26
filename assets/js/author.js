@@ -19,7 +19,6 @@ jQuery(($) => {
             post.excerpt = text.split(/\s+/).slice(0, 33).join(' ');
         });
 
-
         const tags = _.uniqBy(_.flatten(posts.map(post => post.tags)), 'id');
 
         const projects = _.remove(posts, ({ tags }) => _.find(tags, { slug: 'project' }));
@@ -34,6 +33,7 @@ jQuery(($) => {
         const byClient = new Map();
 
         const postsWithoutProject = _.remove(posts, post => !_.find(post.tags, { meta_title: 'project' }));
+        const postUrlsToRemove = _.groupBy([...projects, ...posts], 'url');
 
         clients.forEach(clientTag => {
             const clientProjects = clientTag.id
@@ -42,22 +42,14 @@ jQuery(($) => {
 
             const byProject = new Map();
             if (!clientProjects.length) return;
-            if (!clientTag.id) {
-                clientProjects.push({
-                    id: 0,
-                    title: 'No Project',
-                    excerpt: 'The following posts are not associated with any project',
-                });
-            }
 
             clientProjects.forEach(project => {
-                const projectTags = project.id
-                    ? _.filter(project.tags, { meta_title: 'project' })
-                    : [];
+                if (!project.id) return;
 
-                const projectPosts = project.id
-                    ? posts.filter(post => post.tags.find(({ id }) => _.find(projectTags, { id })))
-                    : postsWithoutProject;
+                const projectTags = _.filter(project.tags, { meta_title: 'project' });
+                const tagIds = _.groupBy(projectTags, 'id');
+                const projectPosts = posts
+                    .filter(post => post.tags.find(tag => tagIds[tag.id]));
 
                 byProject.set(project, projectPosts);
 
@@ -73,12 +65,19 @@ jQuery(($) => {
             byClient.set(clientTag, Array.from(byProject));
         });
 
-        $('.post-feed').before(await $.get('/assets/html/authors.html'));
+        const template = await $.get('/assets/html/authors.html');
+
+        $('.post-card')
+            .filter((idx, el) => postUrlsToRemove[$('.post-card-content-link', el).attr('href')])
+            .remove();
+
+        $('.post-feed').before(template);
 
         new Vue({
             el: '#app',
             data: {
                 clients: Array.from(byClient),
+                hasExtraPosts: postsWithoutProject.length > 0,
             },
         });
     };

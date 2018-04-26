@@ -2171,3 +2171,13 @@ Usage (In Ghost editor):
 .client-projects .post-card-content-link[href]:hover .post-card-tags {
     color: #26a8ed;
 }
+
+.client-projects .post-card-content-link {
+    display: flex;
+}
+
+.client-projects .post-card-content-link .post-card-image {
+    margin-right: 25px;
+    margin-bottom: 25px;
+    width: 400px;
+}
