@@ -65,7 +65,7 @@ jQuery(($) => {
             byClient.set(clientTag, Array.from(byProject));
         });
 
-        const template = await $.get('/assets/html/authors.html');
+        const template = await $.get('/assets/html/authors.html', { bust: +new Date() });
 
         $('.post-card')
             .filter((idx, el) => postUrlsToRemove[$('.post-card-content-link', el).attr('href')])
