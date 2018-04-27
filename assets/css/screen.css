@@ -2148,9 +2148,9 @@ Usage (In Ghost editor):
 /* 12. Authors
 /* ---------------------------------------------------------- */
 
-.client-projects .post-card {
+.post-card.has-sub-posts {
     min-height: auto;
-    min-width: 100%;
+    min-width: calc(100% - 40px);
 }
 
 .client-projects:first-child {

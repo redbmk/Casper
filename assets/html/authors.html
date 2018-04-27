@@ -8,7 +8,7 @@
             <article
                 class="post-card"
                 v-for="([project, posts]) in projects"
-                v-bind:class="{ 'no-image': !project.feature_image }"
+                v-bind:class="{ 'no-image': !project.feature_image, 'has-sub-posts': posts.length }"
                 :key="project.id"
             >
                 <a
