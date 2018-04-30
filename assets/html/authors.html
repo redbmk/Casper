@@ -1,5 +1,5 @@
 <div id="app">
-    <div class="client-projects" v-for="([client, projects]) in clients" :key="client.id">
+    <div class="client-projects" v-for="client in clients" :key="client.id">
         <a v-if="client.id" class="site-title" v-bind:href="`/tag/${client.slug}/`">
             {{client.name}}
         </a>
@@ -7,8 +7,8 @@
         <div class="post-feed">
             <article
                 class="post-card"
-                v-for="([project, posts]) in projects"
-                v-bind:class="{ 'no-image': !project.feature_image, 'has-sub-posts': posts.length }"
+                v-for="project in client.projects"
+                v-bind:class="{ 'no-image': !project.feature_image, 'has-sub-posts': project.posts.length }"
                 :key="project.id"
             >
                 <a
@@ -38,7 +38,7 @@
                     </a>
                     <a
                         class="post-card-content-link"
-                        v-for="post in posts"
+                        v-for="post in project.posts"
                         v-bind:href="post.url"
                     >
                         <div
