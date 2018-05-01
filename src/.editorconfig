@@ -1,0 +1,5 @@
+# http://editorconfig.org
+
+[*]
+insert_final_newline = false
+indent_size = 2

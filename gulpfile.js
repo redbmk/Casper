@@ -1,40 +1,40 @@
-var gulp = require('gulp');
+const gulp = require('gulp');
+
+const themeName = require('./package.json').name;
 
 // gulp plugins and utils
-var gutil = require('gulp-util');
-var livereload = require('gulp-livereload');
-var postcss = require('gulp-postcss');
-var sourcemaps = require('gulp-sourcemaps');
-var zip = require('gulp-zip');
+const gutil = require('gulp-util');
+const livereload = require('gulp-livereload');
+const postcss = require('gulp-postcss');
+const sourcemaps = require('gulp-sourcemaps');
+const zip = require('gulp-zip');
 
 // postcss plugins
-var autoprefixer = require('autoprefixer');
-var colorFunction = require('postcss-color-function');
-var cssnano = require('cssnano');
-var customProperties = require('postcss-custom-properties');
-var easyimport = require('postcss-easy-import');
+const autoprefixer = require('autoprefixer');
+const colorFunction = require('postcss-color-function');
+const cssnano = require('cssnano');
+const customProperties = require('postcss-custom-properties');
+const easyimport = require('postcss-easy-import');
 
-var swallowError = function swallowError(error) {
+const swallowError = (error) => {
     gutil.log(error.toString());
     gutil.beep();
     this.emit('end');
 };
 
-var nodemonServerInit = function () {
+const nodemonServerInit = () => {
     livereload.listen(1234);
 };
 
-gulp.task('build', ['css'], function (/* cb */) {
-    return nodemonServerInit();
-});
+gulp.task('build', ['css'], (/* cb */) => nodemonServerInit());
 
-gulp.task('css', function () {
-    var processors = [
+gulp.task('css', () => {
+    const processors = [
         easyimport,
         customProperties,
         colorFunction(),
-        autoprefixer({browsers: ['last 2 versions']}),
-        cssnano()
+        autoprefixer(),
+        cssnano(),
     ];
 
     return gulp.src('assets/css/*.css')
@@ -46,24 +46,24 @@ gulp.task('css', function () {
         .pipe(livereload());
 });
 
-gulp.task('watch', function () {
+gulp.task('watch', () => {
     gulp.watch('assets/css/**', ['css']);
 });
 
-gulp.task('zip', ['css'], function () {
-    var targetDir = 'dist/';
-    var themeName = require('./package.json').name;
-    var filename = themeName + '.zip';
+gulp.task('zip', ['css'], () => {
+    const targetDir = 'dist/';
+    const filename = `${themeName}.zip`;
 
     return gulp.src([
         '**',
+        '!src', '!src/**',
         '!node_modules', '!node_modules/**',
-        '!dist', '!dist/**'
+        '!dist', '!dist/**',
     ])
         .pipe(zip(filename))
         .pipe(gulp.dest(targetDir));
 });
 
-gulp.task('default', ['build'], function () {
+gulp.task('default', ['build'], () => {
     gulp.start('watch');
 });

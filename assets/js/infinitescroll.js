@@ -1,7 +1,12 @@
 /* global maxPages */
+/* eslint-disable */
 
 // Code snippet inspired by https://github.com/douglasrodrigues5/ghost-blog-infinite-scroll
 $(function ($) {
+    if (document.getElementById('root')) {
+        return;
+    }
+
     var currentPage = 1;
     var pathname = window.location.pathname;
     var $document = $(document);
@@ -92,10 +97,7 @@ $(function ($) {
             var posts = parse.querySelectorAll('.post');
             if (posts.length) {
                 [].forEach.call(posts, function (post) {
-                    var postHref = $('.post-card-content-link', post).attr('href');
-                    if (!$('.post-card-content-link[href="' + postHref + '"]').length) {
-                        $result[0].appendChild(post);
-                    }
+                    $result[0].appendChild(post);
                 });
             }
         }).fail(function (xhr) {
