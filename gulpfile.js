@@ -26,8 +26,6 @@ const nodemonServerInit = () => {
     livereload.listen(1234);
 };
 
-gulp.task('build', ['css'], (/* cb */) => nodemonServerInit());
-
 gulp.task('css', () => {
     const processors = [
         easyimport,
@@ -46,24 +44,24 @@ gulp.task('css', () => {
         .pipe(livereload());
 });
 
+gulp.task('build', gulp.series('css', () => nodemonServerInit()));
+
 gulp.task('watch', () => {
-    gulp.watch('assets/css/**', ['css']);
+    gulp.watch('assets/css/**/*', gulp.series('css'));
 });
 
-gulp.task('zip', ['css'], () => {
+gulp.task('zip', gulp.series('css', () => {
     const targetDir = 'dist/';
     const filename = `${themeName}.zip`;
 
     return gulp.src([
-        '**',
-        '!src', '!src/**',
-        '!node_modules', '!node_modules/**',
-        '!dist', '!dist/**',
-    ])
+        '**/*',
+        '!src', '!src/**/*',
+        '!node_modules', '!node_modules/**/*',
+        '!dist', '!dist/**/*',
+    ], { followSymlinks: false })
         .pipe(zip(filename))
         .pipe(gulp.dest(targetDir));
-});
+}));
 
-gulp.task('default', ['build'], () => {
-    gulp.start('watch');
-});
+gulp.task('default', gulp.parallel('build', 'watch'));
