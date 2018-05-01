@@ -58,6 +58,10 @@ const selectSummary = createSelector(
         });
 
         project.shouldShow = project.posts.length || !!find(project.authors, authorFilter);
+        project.authors = uniqBy([
+          ...project.authors,
+          ...flatten(project.posts.map(post => post.authors)),
+        ], 'id');
       });
 
     const clients = Object.values(clientsById).map((client) => {
@@ -144,7 +148,7 @@ class AuthorPage extends Component<Props> {
             </div>
           </div>
         ))}
-        {this.props.individualPosts.length && (
+        {this.props.individualPosts.length > 0 && (
           <Fragment>
             <h1 className="site-title">Individual Posts</h1>
             <div className="post-feed">
