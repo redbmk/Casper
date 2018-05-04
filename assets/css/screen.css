@@ -1814,7 +1814,7 @@ Usage (In Ghost editor):
     box-shadow: rgba(255,255,255,0.1) 0 0 0 6px;
 }
 
-.site-header-content .author-bio {
+.author-bio {
     z-index: 10;
     flex-shrink: 0;
     margin: 5px 0 10px 0;
@@ -1826,7 +1826,7 @@ Usage (In Ghost editor):
     opacity: 0.8;
 }
 
-.site-header-content .author-meta {
+.author-meta {
     z-index: 10;
     flex-shrink: 0;
     display: flex;
@@ -1842,7 +1842,7 @@ Usage (In Ghost editor):
     stroke: #fff;
 }
 
-.site-header-content .bull {
+.bull {
     display: inline-block;
     margin: 0 12px;
     opacity: 0.5;
@@ -2185,4 +2185,20 @@ Usage (In Ghost editor):
 
 .client-projects .post-card-content-link .post-card-content-text {
     flex: 2;
+}
+
+.post-card-meta .social-link {
+    padding: 4px;
+}
+
+.post-card-meta .social-link svg {
+    fill: #3c484e;
+}
+
+.post-card-meta .social-link-wb svg path {
+    stroke: #3c484e;
+}
+
+.reading-time .author-meta {
+    margin: 0;
 }

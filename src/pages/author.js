@@ -12,6 +12,7 @@ import { loadPosts } from '../actions';
 import type { Post, Project, Tag } from '../types';
 import ProjectCard from '../components/project-card';
 import PostCard from '../components/post-card';
+import AuthorStat from '../components/author-stat';
 import readingTime from '../utils/reading-time';
 
 const withMeta = (post) => {
@@ -26,7 +27,6 @@ const withMeta = (post) => {
 };
 
 const selectPosts = ({ posts }) => [...posts || []];
-const selectLoading = ({ posts }) => ({ loading: !posts.length });
 const selectAuthorFilter = ({ match: { params: { slug } } }) => ({ slug });
 const selectSummary = createSelector(
   selectPosts,
@@ -87,13 +87,6 @@ const selectSummary = createSelector(
       individualPosts,
     };
   },
-);
-
-const AuthorStat = ({ singular, numItems }) => numItems > 0 && (
-  <Fragment>
-    {numItems} {singular}{numItems > 1 ? 's' : ''}
-    <span className="bull">&bull;</span>
-  </Fragment>
 );
 
 type Props = {
@@ -166,5 +159,4 @@ class AuthorPage extends Component<Props> {
 export default compose(
   connect(({ loading, posts }) => ({ loading, posts }), { loadPosts }),
   withProps(selectSummary),
-  withProps(selectLoading),
 )(AuthorPage);

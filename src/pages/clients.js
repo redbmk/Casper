@@ -13,7 +13,6 @@ import PostCard from '../components/post-card';
 import { withMeta } from '../utils';
 
 const selectPosts = ({ posts }) => [...posts || []].map(withMeta);
-const selectLoading = ({ posts }) => ({ loading: !posts.length });
 const selectSummary = createSelector(
   selectPosts,
   (posts) => {
@@ -103,5 +102,4 @@ class ClientsPage extends Component<Props> {
 export default compose(
   connect(({ loading, posts }) => ({ loading, posts }), { loadPosts }),
   withProps(selectSummary),
-  withProps(selectLoading),
 )(ClientsPage);
