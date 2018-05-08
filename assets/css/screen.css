@@ -2202,3 +2202,22 @@ Usage (In Ghost editor):
 .reading-time .author-meta {
     margin: 0;
 }
+
+/* 13. Calendar
+/* ---------------------------------------------------------- */
+
+.page-calendar .site-main {
+    padding-top: 4vw;
+}
+
+.page-calendar #root,
+.page-calendar .inner,
+.page-calendar .site-main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.page-calendar {
+    font-size: 12px;
+}

@@ -24,3 +24,7 @@ projectFilesBackup
 
 dist/
 assets/built/
+
+.env
+.env.local
+.env.production
