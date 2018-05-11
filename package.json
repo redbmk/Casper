@@ -66,6 +66,9 @@
         "posts_per_page": 25
     },
     "dependencies": {
+        "bootstrap": "^4.1.1",
+        "final-form": "^4.6.1",
+        "firebase": "^5.0.2",
         "immutable": "^3.8.2",
         "jquery": "^3.3.1",
         "lodash": "^4.17.10",
@@ -73,9 +76,12 @@
         "react": "^16.3.2",
         "react-big-calendar": "^0.19.1",
         "react-dom": "^16.3.2",
-        "react-google-button": "^0.5.3",
+        "react-final-form": "^3.4.0",
         "react-redux": "^5.0.7",
         "react-router-dom": "^4.2.2",
+        "react-widgets": "^4.2.6",
+        "react-widgets-moment": "^4.0.12",
+        "reactstrap": "^6.0.1",
         "recompose": "^0.27.0",
         "redux": "^4.0.0",
         "redux-devtools-extension": "^2.13.2",

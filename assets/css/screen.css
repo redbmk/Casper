@@ -2218,6 +2218,6 @@ Usage (In Ghost editor):
     flex: 1;
 }
 
-.page-calendar {
-    font-size: 12px;
+.ReactModal__Overlay {
+    z-index: 100;
 }
