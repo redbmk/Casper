@@ -6,25 +6,13 @@ import { compose, withProps } from 'recompose';
 import { createSelector } from 'reselect';
 import { uniq, uniqBy, flatten, remove, filter, find } from 'lodash';
 import { connect } from 'react-redux';
-import $ from 'jquery';
 
 import { loadPosts } from '../actions';
 import type { Post, Project, Tag } from '../types';
 import ProjectCard from '../components/project-card';
 import PostCard from '../components/post-card';
 import AuthorStat from '../components/author-stat';
-import readingTime from '../utils/reading-time';
-
-const withMeta = (post) => {
-  let excerpt = post.custom_excerpt;
-
-  if (!excerpt) {
-    const text = $(post.html.replace(/<img .*?>/g, '')).text().trim();
-    excerpt = text.split(/\s+/).slice(0, 33).join(' ');
-  }
-
-  return { ...post, excerpt, readingTime: readingTime(post) };
-};
+import { withMeta } from '../utils';
 
 const selectPosts = ({ posts }) => [...posts || []];
 const selectAuthorFilter = ({ match: { params: { slug } } }) => ({ slug });
