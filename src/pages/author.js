@@ -12,9 +12,8 @@ import type { Post, Project, Tag } from '../types';
 import ProjectCard from '../components/project-card';
 import PostCard from '../components/post-card';
 import AuthorStat from '../components/author-stat';
-import { withMeta } from '../utils';
+import { selectPosts } from '../selectors';
 
-const selectPosts = ({ posts }) => [...posts || []];
 const selectAuthorFilter = ({ match: { params: { slug } } }) => ({ slug });
 const selectSummary = createSelector(
   selectPosts,
@@ -26,10 +25,9 @@ const selectSummary = createSelector(
       [tag.id]: { tag, projects: [] },
     }), {});
 
-    const authorPosts = posts.filter(post => find(post.authors, authorFilter)).map(withMeta);
+    const authorPosts = posts.filter(post => find(post.authors, authorFilter));
 
     remove(posts, post => post.tags.find(tag => tag.slug === 'projects'))
-      .map(withMeta)
       .forEach((projectPost) => {
         const project = { ...projectPost, posts: [] };
 
@@ -57,8 +55,7 @@ const selectSummary = createSelector(
       return projects.length ? { ...client.tag, projects } : null;
     }).filter(Boolean);
 
-    const filteredProjects = uniq(flatten(clients.map(({ projects }) => projects)))
-      .map(withMeta);
+    const filteredProjects = uniq(flatten(clients.map(({ projects }) => projects)));
 
     const individualPosts = [...authorPosts];
     filteredProjects.forEach((project) => {

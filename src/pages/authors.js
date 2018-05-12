@@ -11,8 +11,8 @@ import { loadPosts } from '../actions';
 import type { Author } from '../types';
 import AuthorCard from '../components/author-card';
 import Stat from '../components/author-stat';
+import { selectPosts } from '../selectors';
 
-const selectPosts = ({ posts }) => [...posts || []];
 const selectSummary = createSelector(
   selectPosts,
   (posts) => {

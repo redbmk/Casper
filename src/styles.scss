@@ -1,1 +1,107 @@
 @import 'node_modules/bootstrap/scss/bootstrap';
+
+.site-nav {
+  min-width: 174px;
+  width: 100%;
+  overflow: hidden;
+
+  .home-template & {
+    min-width: 0;
+  }
+}
+
+.site-nav-left {
+  min-width: 174px;
+
+  .nav {
+    display: flex;
+    margin: 0 0 0 -12px;
+    padding: 0;
+    list-style: none;
+    flex-wrap: nowrap;
+    flex: 0;
+    min-width: 0;
+
+    li {
+      display: block;
+      margin: 0;
+      padding: 0;
+      text-transform: uppercase;
+
+      a {
+        display: block;
+        margin: 0;
+        padding: 10px 12px;
+        color: #fff;
+        opacity: 0.8;
+        &:hover {
+          text-decoration: none;
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
+
+.site-search {
+  z-index: 1000;
+  transition: 0.3s;
+  flex: 1;
+  margin-left: 12px;
+  min-width: 150px;
+
+  &.is-focused, &.is-menu-open, &:focus-within {
+    margin-left: 0;
+    min-width: calc(100% - 174px);
+
+    .rbt-input-main, .rbt-input-main:focus {
+      border-color: #fff;
+    }
+
+    .home-template & {
+      margin-left: 0;
+      min-width: 100%;
+    }
+  }
+
+  @media (max-width: 700px) {
+    padding-right: 4vw;
+
+
+    &.is-focused, &.is-menu-open, &:focus-within {
+      padding-left: 4vw;
+
+      .rbt-menu {
+        margin-left: 4vw;
+        margin-right: 4vw;
+        width: calc(100% - 8vw) !important;
+      }
+    }
+  }
+
+  .rbt-input-main, .rbt-input-main:focus {
+    transition: 0.3s;
+    background-color: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 0;
+    box-shadow: none;
+    color: #fff;
+
+    &::placeholder {
+      color: rgba(255,255,255,0.8);
+    }
+  }
+
+  .rbt-input-hint {
+    color: rgba(255,255,255,0.8) !important;
+    width: 100%;
+  }
+
+  .rbt-menu {
+    transition: 0.3s;
+    width: 100% !important;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}

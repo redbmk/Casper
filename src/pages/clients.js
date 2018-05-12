@@ -10,9 +10,8 @@ import { loadPosts } from '../actions';
 import type { Tag } from '../types';
 import ProjectCard from '../components/project-card';
 import PostCard from '../components/post-card';
-import { withMeta } from '../utils';
+import { selectPosts } from '../selectors';
 
-const selectPosts = ({ posts }) => [...posts || []].map(withMeta);
 const selectSummary = createSelector(
   selectPosts,
   (posts) => {

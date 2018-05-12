@@ -97,7 +97,7 @@ body {
         margin-top: -70px;
         padding-top: 0;
     }
-    .home-template .site-nav {
+    .home-template .site-nav-container {
         position: relative;
         top: -70px;
     }
@@ -192,6 +192,10 @@ body {
 /* 5. Site Navigation
 /* ---------------------------------------------------------- */
 
+.site-nav-container {
+    display: flex;
+}
+
 .site-nav {
     position: relative;
     z-index: 300;
@@ -239,6 +243,7 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
 
 .site-nav-logo:hover {
     text-decoration: none;
+    color: #fff;
 }
 
 .site-nav-logo img {
@@ -339,6 +344,7 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
 
 .subscribe-button:hover {
     text-decoration: none;
+    color: #fff;
     opacity: 1;
 }
 

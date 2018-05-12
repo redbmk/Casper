@@ -12,7 +12,8 @@ const updateState = payload => ({
 });
 
 export const loadPosts = () => async (dispatch, getState) => {
-  if (getState().loaded) return;
+  const { loaded, loading } = getState();
+  if (loaded || loading) return;
 
   await dispatch(updateState({ loading: true }));
 
