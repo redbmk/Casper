@@ -13,7 +13,7 @@
     },
     "scripts": {
         "start": "sh -c 'rm -rf assets/built assets/dist && gulp & parcel watch -d assets/dist --public-url /assets/dist src/index.html & wait'",
-        "zip": "rm -rf assets/built assets/dist && parcel build -d assets/dist --public-url /assets/dist src/index.html && gulp zip"
+        "zip": "rm -rf assets/built assets/dist && NODE_ENV=production parcel build -d assets/dist --public-url /assets/dist src/index.html && gulp zip"
     },
     "author": {
         "name": "Ghost Foundation",
@@ -56,6 +56,7 @@
         "gulp-util": "3.0.7",
         "gulp-watch": "4.3.8",
         "gulp-zip": "4.0.0",
+        "node-sass": "^4.9.0",
         "nodemon": "^1.17.3",
         "parcel-bundler": "^1.7.1",
         "postcss-color-function": "2.0.1",

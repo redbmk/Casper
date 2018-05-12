@@ -14,7 +14,6 @@ import {
   ModalFooter,
 } from 'reactstrap';
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import Field from '../components/field';

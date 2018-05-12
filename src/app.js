@@ -1,5 +1,8 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
+
+import './styles.scss';
+
 import AuthorPage from './pages/author';
 import ClientsPage from './pages/clients';
 import AuthorsPage from './pages/authors';
