@@ -7,8 +7,10 @@ export default (post) => {
   let excerpt = post.custom_excerpt;
 
   if (!excerpt) {
-    const text = $(post.html.replace(/<img .*?>/g, '')).text().trim();
-    excerpt = text.split(/\s+/).slice(0, 33).join(' ');
+    excerpt = post.html.replace(/<img [\s\S]*?>/g, '');
+    excerpt = excerpt.replace(/<script [\s\S]*?<\/script>/g, '');
+    excerpt = $(excerpt).text().trim();
+    excerpt = excerpt.split(/\s+/).slice(0, 33).join(' ');
   }
 
   return {
