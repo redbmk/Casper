@@ -1,12 +1,43 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { Typeahead, Highlighter } from 'react-bootstrap-typeahead';
+import { createSelector } from 'reselect';
+import { Typeahead, Highlighter, Menu, MenuItem } from 'react-bootstrap-typeahead';
+import { groupBy } from 'lodash';
 
-import { selectPosts } from '../selectors';
-import type { Post } from '../types';
+import { selectPosts, selectClients, selectProjects, selectIndividualPosts } from '../selectors';
+
+type Option = {
+  group: 'Clients' | 'Projects' | 'Posts',
+  id: string,
+  title: string,
+  description: string,
+  url: string,
+};
+
+const selectOptions = createSelector(
+  selectClients,
+  selectProjects,
+  selectIndividualPosts,
+  (clients, projects, posts): Array<Option> => [
+    ...clients.map(client => ({
+      group: 'Clients',
+      id: client.id,
+      title: client.name || '',
+      description: client.description || '',
+      url: `/tag/${client.slug}`,
+    })),
+    ...[...projects, ...posts].map(post => ({
+      group: post.posts ? 'Projects' : 'Posts',
+      id: post.id,
+      title: post.title || '',
+      description: post.excerpt || '',
+      url: post.url,
+    })),
+  ],
+);
 
 type Props = {
-  posts: Array<Post>,
+  options: Array<Option>,
 };
 
 type State = {
@@ -37,17 +68,45 @@ class SiteSearch extends Component<Props, State> {
       <Highlighter search={props.text}>
         {option.title || ' '}
       </Highlighter>
-      {option.excerpt.includes(props.text) && (
+      {option.description.toLowerCase().includes(props.text.toLowerCase()) && (
         <div>
           <small>
             <Highlighter search={props.text}>
-              {option.excerpt}
+              {option.description}
             </Highlighter>
           </small>
         </div>
       )}
     </Fragment>
   );
+
+  renderMenu = (results, props) => {
+    const grouped = groupBy(results, option => option.group);
+    let idx = 0;
+
+    return (
+      <Menu {...props}>
+        {Object.entries(grouped).map(([group, options]) => (
+          <Fragment key={group}>
+            {!!idx && <Menu.Divider />}
+            <Menu.Header>{group}</Menu.Header>
+            {options.map((option) => {
+              const item = (
+                <MenuItem key={option.id} option={option} position={idx}>
+                  {this.renderMenuItemChildren(option, props)}
+                </MenuItem>
+              );
+
+              idx += 1;
+
+              return item;
+            })}
+
+          </Fragment>
+        ))}
+      </Menu>
+    );
+  };
 
   render() {
     const classes = [
@@ -60,8 +119,8 @@ class SiteSearch extends Component<Props, State> {
       <Typeahead
         placeholder="Search"
         className={classes}
-        options={this.props.posts}
-        filterBy={['title', 'excerpt']}
+        options={this.props.options}
+        filterBy={['title', 'description']}
         onFocus={this.onFocus}
         onBlur={this.onBlur}
         onMenuHide={this.onMenuHide}
@@ -69,7 +128,7 @@ class SiteSearch extends Component<Props, State> {
         onChange={this.onChange}
         labelKey="title"
         minLength={2}
-        renderMenuItemChildren={this.renderMenuItemChildren}
+        renderMenu={this.renderMenu}
       />
     );
   }
@@ -77,4 +136,5 @@ class SiteSearch extends Component<Props, State> {
 
 export default connect(props => ({
   posts: selectPosts(props),
+  options: selectOptions(props),
 }))(SiteSearch);
