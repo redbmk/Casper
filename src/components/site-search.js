@@ -1,13 +1,34 @@
 import React, { Component, Fragment } from 'react';
+import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { createSelector } from 'reselect';
 import { Typeahead, Highlighter, Menu, MenuItem } from 'react-bootstrap-typeahead';
 import { groupBy } from 'lodash';
 
-import { selectPosts, selectClients, selectProjects, selectIndividualPosts } from '../selectors';
+import {
+  selectAuthors,
+  selectClients,
+  selectIndividualPosts,
+  selectPosts,
+  selectProjects,
+} from '../selectors';
+
+const MenuItemWrapper = styled.div`
+  display: flex;
+`;
+
+const Image = styled.img`
+  display: block;
+  background: #e3e9ed;
+  border-radius: 100%;
+  object-fit: cover;
+  height: 50px;
+  width: 50px;
+  margin-right: 10px;
+`;
 
 type Option = {
-  group: 'Clients' | 'Projects' | 'Posts',
+  group: 'Clients' | 'Projects' | 'Posts' | 'Authors',
   id: string,
   title: string,
   description: string,
@@ -18,7 +39,8 @@ const selectOptions = createSelector(
   selectClients,
   selectProjects,
   selectIndividualPosts,
-  (clients, projects, posts): Array<Option> => [
+  selectAuthors,
+  (clients, projects, posts, authors): Array<Option> => [
     ...clients.map(client => ({
       group: 'Clients',
       id: client.id,
@@ -32,6 +54,14 @@ const selectOptions = createSelector(
       title: post.title || '',
       description: post.excerpt || '',
       url: post.url,
+    })),
+    ...authors.map(author => ({
+      group: 'Authors',
+      id: author.id,
+      title: author.name || '',
+      description: author.bio || '',
+      url: `/author/${author.slug}`,
+      image: author.profile_image,
     })),
   ],
 );
@@ -65,18 +95,23 @@ class SiteSearch extends Component<Props, State> {
 
   renderMenuItemChildren = (option, props) => (
     <Fragment>
-      <Highlighter search={props.text}>
-        {option.title || ' '}
-      </Highlighter>
-      {option.description.toLowerCase().includes(props.text.toLowerCase()) && (
+      <MenuItemWrapper>
+        {option.image && <Image alt={option.title} src={option.image} />}
         <div>
-          <small>
-            <Highlighter search={props.text}>
-              {option.description}
-            </Highlighter>
-          </small>
+          <Highlighter search={props.text}>
+            {option.title || ' '}
+          </Highlighter>
+          {option.description.toLowerCase().includes(props.text.toLowerCase()) && (
+            <div>
+              <small>
+                <Highlighter search={props.text}>
+                  {option.description}
+                </Highlighter>
+              </small>
+            </div>
+          )}
         </div>
-      )}
+      </MenuItemWrapper>
     </Fragment>
   );
 

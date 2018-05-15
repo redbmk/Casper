@@ -2,54 +2,15 @@
 
 import React, { Component, Fragment } from 'react';
 import { createPortal } from 'react-dom';
-import { compose, withProps } from 'recompose';
-import { createSelector } from 'reselect';
-import { keyBy, uniqBy, sortBy, flatten, filter, find } from 'lodash';
 import { connect } from 'react-redux';
 
-import { loadPosts } from '../actions';
 import type { Author } from '../types';
 import AuthorCard from '../components/author-card';
 import Stat from '../components/author-stat';
-import { selectPosts } from '../selectors';
-
-const selectSummary = createSelector(
-  selectPosts,
-  (posts) => {
-    const nonProjectPosts = posts.filter(post => !find(post.tags, { slug: 'projects' }));
-    const projects = posts
-      .filter(post => find(post.tags, { slug: 'projects' }))
-      .map((project) => {
-        const projectClients = filter(project.tags, { meta_title: 'client' });
-        const projectIds = keyBy(filter(project.tags, { meta_title: 'project' }), 'id');
-        const projectPosts = nonProjectPosts
-          .filter(post => post.tags.find(tag => projectIds[tag.id]))
-          .map(post => ({ ...post, authorIds: keyBy(post.authors, 'id') }));
-
-        const projectAuthors = flatten(project.authors, ...projectPosts.map(post => post.authors));
-
-        return {
-          ...project,
-          clients: projectClients,
-          posts: projectPosts,
-          authorIds: keyBy(projectAuthors, 'id'),
-        };
-      });
-
-    const authors = sortBy(uniqBy(flatten(posts.map(post => post.authors)), 'id'), 'name');
-
-    return {
-      authors,
-      numProjects: projects.length,
-      numClients: uniqBy(flatten(projects.map(project => project.clients)), 'id').length,
-      numPosts: nonProjectPosts.length,
-    };
-  },
-);
+import { selectAuthors, selectProjects, selectClients, selectNonProjectPosts } from '../selectors';
 
 type Props = {
   loading: boolean,
-  loadPosts: () => void,
   authors: Array<Author>,
   numClients: number,
   numProjects: number,
@@ -57,10 +18,6 @@ type Props = {
 };
 
 class AuthorsPage extends Component<Props> {
-  componentWillMount() {
-    this.props.loadPosts();
-  }
-
   get stats() {
     const element = document.getElementById('author-stats');
 
@@ -117,7 +74,10 @@ class AuthorsPage extends Component<Props> {
   }
 }
 
-export default compose(
-  connect(({ loading, posts }) => ({ loading, posts }), { loadPosts }),
-  withProps(selectSummary),
-)(AuthorsPage);
+export default connect(props => ({
+  loading: props.loading,
+  authors: selectAuthors(props),
+  numClients: selectClients(props).length,
+  numProjects: selectProjects(props).length,
+  numPosts: selectNonProjectPosts(props).length,
+}))(AuthorsPage);

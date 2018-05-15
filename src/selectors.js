@@ -1,8 +1,10 @@
 import { createSelector } from 'reselect';
 import {
   filter,
+  find,
   flatten,
   keyBy,
+  map,
   sortBy,
   uniqBy,
 } from 'lodash';
@@ -70,6 +72,11 @@ export const selectClients = createSelector(
   },
 );
 
+export const selectNonProjectPosts = createSelector(
+  selectPosts,
+  posts => posts.filter(post => !find(post.tags, { slug: 'projects' })),
+);
+
 export const selectIndividualPosts = createSelector(
   selectPosts,
   selectProjects,
@@ -78,4 +85,9 @@ export const selectIndividualPosts = createSelector(
 
     return posts.filter(({ id }) => !belongsToProject[id]);
   },
+);
+
+export const selectAuthors = createSelector(
+  selectPosts,
+  posts => sortBy(uniqBy(flatten(map(posts, 'authors')), 'id'), 'name'),
 );
