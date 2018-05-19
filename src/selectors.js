@@ -42,6 +42,7 @@ export const selectProjects = createSelector(
         ...project,
         primary_tag: name ? { name } : project.primary_tag,
         posts,
+        originalAuthors: project.authors,
         authors: uniqBy([
           ...project.authors,
           ...flatten(posts.map(post => post.authors)),
@@ -51,14 +52,17 @@ export const selectProjects = createSelector(
   },
 );
 
-export const selectClients = createSelector(
+export const selectClientsWithEmptyClient = createSelector(
   selectProjects,
   (projects) => {
     const projectsByClientId = {};
     const clientsById = {};
 
     projects.forEach((project) => {
-      filter(project.tags, { meta_title: 'client' }).forEach((client) => {
+      const clients = filter(project.tags, { meta_title: 'client' });
+      if (!clients.length) clients.push({ id: '', name: 'No client' });
+
+      clients.forEach((client) => {
         if (!clientsById[client.id]) clientsById[client.id] = client;
         if (!projectsByClientId[client.id]) projectsByClientId[client.id] = [];
         projectsByClientId[client.id].push(project);
@@ -67,9 +71,14 @@ export const selectClients = createSelector(
 
     return sortBy(
       Object.values(clientsById).map(tag => ({ ...tag, projects: projectsByClientId[tag.id] })),
-      [tag => tag.name.toLowerCase(), 'id'],
+      [tag => !tag.id, tag => tag.name.toLowerCase(), 'id'],
     );
   },
+);
+
+export const selectClients = createSelector(
+  selectClientsWithEmptyClient,
+  clients => clients.filter(client => client.id),
 );
 
 export const selectNonProjectPosts = createSelector(
