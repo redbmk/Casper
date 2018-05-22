@@ -75,7 +75,7 @@ class AuthorsPage extends Component<Props> {
 }
 
 export default connect(props => ({
-  loading: props.loading,
+  loading: !props.loaded,
   authors: selectAuthors(props),
   numClients: selectClients(props).length,
   numProjects: selectProjects(props).length,

@@ -116,6 +116,6 @@ class AuthorPage extends Component<Props> {
 }
 
 export default compose(
-  connect(({ loading, posts }) => ({ loading, posts })),
+  connect(({ loaded, posts }) => ({ loading: !loaded, posts })),
   withProps(selectSummary),
 )(AuthorPage);

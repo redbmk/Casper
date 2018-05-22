@@ -32,7 +32,7 @@ const ClientsPage = ({ clients }: Props) => clients.map(client => (
 
 export default compose(
   connect(props => ({
-    loading: props.loading,
+    loading: !props.loaded,
     clients: selectClients(props),
   })),
   branch(props => props.loading, renderNothing),

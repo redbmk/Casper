@@ -1174,6 +1174,7 @@ Usage (In Ghost editor):
 
 .subscribe-form .form-group {
     flex-grow: 1;
+    margin-bottom: 0;
 }
 
 .subscribe-email {
@@ -1241,6 +1242,7 @@ Usage (In Ghost editor):
     }
     .subscribe-form .form-group {
         width: 100%;
+        margin-bottom: 0;
     }
     .subscribe-form button {
         margin: 10px 0 0 0;
@@ -1310,12 +1312,22 @@ Usage (In Ghost editor):
     font-weight: 500;
     border-radius: 20px;
     transition: all ease 0.2s;
+    flex-shrink: 0;
 }
 
 .author-card-button:hover {
     border-color: var(--blue);
     color: var(--blue);
     text-decoration: none;
+}
+
+.author-card-read-more {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    margin: 8px 0 0 20px;
+    min-width: max-content;
 }
 
 /* 7.2.2 Multiple Author Byline
@@ -1329,6 +1341,12 @@ Usage (In Ghost editor):
     margin-top: 20px;
     padding-top: 40px;
     border-top: color(var(--lightgrey) l(+10%)) 1px solid;
+}
+
+.post-full-authors.project-byline {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
 .post-full-authors-content {
@@ -1394,6 +1412,22 @@ Usage (In Ghost editor):
     border-top: 12px solid #fff;
     border-right: 12px solid transparent;
     border-left: 12px solid transparent;
+}
+
+.project-byline.author-card {
+    text-align: left;
+}
+
+.project-byline .author-list-item .author-card {
+    bottom: auto;
+    top: 130%;
+}
+
+.project-byline .author-list-item .author-card:before {
+    border-top: none;
+    border-bottom: 12px solid var(--darkgrey);
+    top: auto;
+    bottom: 100%;
 }
 
 .author-list-item .author-card.hovered {
@@ -1528,6 +1562,7 @@ Usage (In Ghost editor):
 }
 
 .read-next-card-header-title a:hover {
+    color: #fff;
     text-decoration: none;
 }
 
@@ -1597,6 +1632,7 @@ Usage (In Ghost editor):
     text-align: center;
 }
 
+.read-next-card-footer a:hover,
 .read-next-card-footer a {
     color: #fff;
 }
@@ -1729,7 +1765,7 @@ Usage (In Ghost editor):
     background: #005e99;
 }
 
-.progress {
+progress.progress {
     position: absolute;
     right: 0;
     bottom: -1px;
@@ -1741,6 +1777,8 @@ Usage (In Ghost editor):
     background: transparent;
 
     appearance: none;
+
+    border-radius: 0;
 }
 
 .progress::-webkit-progress-bar {
@@ -1995,6 +2033,7 @@ Usage (In Ghost editor):
 
 .subscribe-overlay .form-group {
     flex-grow: 1;
+    margin-bottom: 0;
 }
 
 .subscribe-overlay .subscribe-email {

@@ -24,6 +24,6 @@ const AuthorPage = ({ loading, projects }: Props) => {
 };
 
 export default connect(props => ({
-  loading: props.loading,
+  loading: !props.loaded,
   projects: selectProjects(props),
 }))(AuthorPage);

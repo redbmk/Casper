@@ -12,6 +12,7 @@ import AuthorPage from './pages/author';
 import ClientsPage from './pages/clients';
 import AuthorsPage from './pages/authors';
 import ProjectsPage from './pages/projects';
+import PostPage from './pages/post';
 import CalendarPage from './pages/calendar';
 import SiteSearch from './components/site-search';
 
@@ -24,6 +25,7 @@ const App = () => (
       <Route exact path="/tag/authors" component={AuthorsPage} />
       <Route exact path="/tag/projects" component={ProjectsPage} />
       <Route exact path="/calendar" component={CalendarPage} />
+      <Route exact path="/:slug" component={PostPage} />
     </Switch>
   </Fragment>
 );
