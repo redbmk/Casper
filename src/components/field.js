@@ -57,7 +57,7 @@ const Field = ({
   return (
     <FormGroup>
       <Label for={id}>{labelString}</Label>
-      <Input invalid={meta.touched && meta.invalid} {...input} {...props} />
+      <Input invalid={meta.touched && meta.invalid} type={type} {...input} {...props} />
       <FormFeedback className="d-block">{meta.touched && meta.error}&nbsp;</FormFeedback>
     </FormGroup>
   );

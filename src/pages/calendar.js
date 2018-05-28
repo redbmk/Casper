@@ -39,7 +39,7 @@ const BigCalendar = styled(RBC)`
 
 type Props = {};
 type State = {
-  events: Map<string, any>;
+  events: Map<string, any>,
   loading: bool,
 };
 
