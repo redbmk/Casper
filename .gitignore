@@ -28,3 +28,9 @@ assets/built/
 .env
 .env.local
 .env.production
+
+.service-account-file.json
+.service-account-file.production.json
+
+.firebaserc
+functions/lib

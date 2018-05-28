@@ -58,6 +58,7 @@ gulp.task('zip', gulp.series('css', () => {
         '**/*',
         '!src', '!src/**/*',
         '!node_modules', '!node_modules/**/*',
+        '!functions', '!functions/**/*',
         '!dist', '!dist/**/*',
     ], { followSymlinks: false })
         .pipe(zip(filename))
