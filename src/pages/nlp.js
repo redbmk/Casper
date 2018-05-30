@@ -14,11 +14,11 @@ import {
 import { Form } from 'react-final-form';
 import { Map } from 'immutable';
 import moment from 'moment';
-import ReactJSON from 'react-json-view';
 
 import Loading from '../components/loading';
 import Field from '../components/field';
 import { firestore } from '../firebase';
+import NLPTabs from '../components/nlp-tabs';
 
 const WideModal = styled(Modal)`
   min-width: 80vw;
@@ -29,8 +29,14 @@ const Content = styled.pre`
   max-height: 300px;
 `;
 
-const ClickableRow = styled.tr`
+const EntryRow = styled.tr`
   cursor: pointer;
+  td {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 `;
 
 const required = value => (value ? undefined : 'Required');
@@ -146,16 +152,13 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
         <ModalBody>
           <h4>Content</h4>
           <Content>{doc.content}</Content>
+          {!doc.results && !doc.error && (
+            <h4><Loading text="Processing results..." /></h4>
+          )}
           {!!doc.results && (
             <Fragment>
               <h4>Results</h4>
-              <ReactJSON
-                src={doc.results}
-                name={false}
-                indentWidth={2}
-                collapseStringsAfterLength={100}
-                groupArraysAfterLength={25}
-              />
+              <NLPTabs results={doc.results} />
             </Fragment>
           )}
           {!!doc.error && (
@@ -240,13 +243,13 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
               <td />
               <td />
             </tr>
-            {documents.sortBy(doc => doc.uploadedAt).toArray().map(doc => (
-              <ClickableRow key={doc.id} onClick={() => this.setState({ viewing: doc.id })}>
+            {documents.sortBy(doc => doc.uploadedAt).reverse().toArray().map(doc => (
+              <EntryRow key={doc.id} onClick={() => this.setState({ viewing: doc.id })}>
                 <td>{doc.title}</td>
                 <td>{moment(doc.uploadedAt).format('LLL')}</td>
-                <td>{doc.content.slice(0, 40)}{doc.content.length > 40 && '...'}</td>
+                <td>{doc.content}</td>
                 <td>{this.renderDocStatus(doc)}</td>
-              </ClickableRow>
+              </EntryRow>
             ))}
           </tbody>
         </Table>

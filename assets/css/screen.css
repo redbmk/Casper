@@ -252,21 +252,21 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
     height: 21px;
 }
 
-.nav {
+.site-nav-left .nav {
     display: flex;
     margin: 0 0 0 -12px;
     padding: 0;
     list-style: none;
 }
 
-.nav li {
+.site-nav-left .nav li {
     display: block;
     margin: 0;
     padding: 0;
     text-transform: uppercase;
 }
 
-.nav li a {
+.site-nav-left .nav li a {
     display: block;
     margin: 0;
     padding: 10px 12px;
@@ -274,7 +274,7 @@ The knock-on effect of this is ugly browser-scroll bars at the bottom, so 80px o
     opacity: 0.8;
 }
 
-.nav li a:hover {
+.site-nav-left .nav li a:hover {
     text-decoration: none;
     opacity: 1;
 }

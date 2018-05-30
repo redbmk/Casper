@@ -43,6 +43,10 @@
   }
 }
 
+.nav-tabs .nav-link {
+  cursor: pointer;
+}
+
 .site-search {
   z-index: 1000;
   transition: 0.3s;
