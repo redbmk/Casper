@@ -11,12 +11,7 @@ const client = new language.LanguageServiceClient({
 // eslint-disable-next-line import/prefer-default-export
 export const processLanguage = functions.firestore.document('documents/{id}')
   .onCreate(async (snapshot) => {
-    const document = {
-      type: 'PLAIN_TEXT',
-      ...snapshot.data(),
-    };
-
-    const { type } = document;
+    const { content, type = 'PLAIN_TEXT' } = snapshot.data();
 
     try {
       const features = {
@@ -27,7 +22,11 @@ export const processLanguage = functions.firestore.document('documents/{id}')
         classifyText: true,
       };
 
-      const results = await client.annotateText({ document, features });
+      const [results] = await client.annotateText({
+        features,
+        document: { type, content },
+        encodingType: 'UTF8',
+      });
 
       return snapshot.ref.set({ type, results }, { merge: true });
     } catch (error) {
