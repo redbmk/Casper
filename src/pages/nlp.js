@@ -17,7 +17,7 @@ import moment from 'moment';
 
 import Loading from '../components/loading';
 import Field from '../components/field';
-import { firestore } from '../firebase';
+import { database } from '../firebase';
 import NLPTabs from '../components/nlp-tabs';
 
 const WideModal = styled(Modal)`
@@ -59,29 +59,17 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
   };
 
   componentDidMount() {
-    let documents = new Map();
-
-    this.documentListenerUnsubscribe = firestore.collection('documents').onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach(({ type, doc }) => {
-        if (type === 'removed') {
-          documents = documents.delete(doc.id);
-        } else {
-          documents = documents.set(doc.id, {
-            id: doc.id,
-            ...doc.data(),
-          });
-        }
-      });
-
-      this.setState({ documents, loading: false });
+    this.documentsRef = database.ref('documents');
+    this.documentsRef.on('value', (snapshot) => {
+      this.setState({ documents: new Map(snapshot.val()), loading: false });
     });
   }
 
   componentWillUnmount() {
-    if (this.documentListenerUnsubscribe) this.documentListenerUnsubscribe();
+    if (this.documentsRef) this.documentsRef.off();
   }
 
-  documentListenerUnsubscribe: ?(() => void);
+  documentsRef: ?any;
 
   closeViewer = () => {
     this.setState({ viewing: null });
@@ -100,7 +88,7 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
   }
 
   addEntry = async (doc) => {
-    firestore.collection('documents').add({
+    database.ref('documents').push().set({
       ...doc,
       uploadedAt: moment.utc().format(),
     });
@@ -112,7 +100,7 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
   }
 
   actuallyDeleteEntry = async () => {
-    firestore.collection('documents').doc(this.state.viewing).delete();
+    database.ref('documents').child(this.state.viewing).remove();
     this.setState({ viewing: null, deleting: false });
   }
 
@@ -204,7 +192,7 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
   renderDocStatus = (doc) => {
     if (doc.error) return <span className="text-danger">Error</span>;
     if (doc.results) return <span className="text-success">Success</span>;
-    return <Loading text="processing..." />;
+    return <Loading text="Processing..." />;
   }
 
   render() {
@@ -243,8 +231,8 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
               <td />
               <td />
             </tr>
-            {documents.sortBy(doc => doc.uploadedAt).reverse().toArray().map(doc => (
-              <EntryRow key={doc.id} onClick={() => this.setState({ viewing: doc.id })}>
+            {documents.sortBy(doc => doc.uploadedAt).reverse().entrySeq().map(([id, doc]) => (
+              <EntryRow key={id} onClick={() => this.setState({ viewing: id })}>
                 <td>{doc.title}</td>
                 <td>{moment(doc.uploadedAt).format('LLL')}</td>
                 <td>{doc.content}</td>

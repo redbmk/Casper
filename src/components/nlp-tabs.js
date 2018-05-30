@@ -12,7 +12,6 @@ import {
   Card,
   CardTitle,
   CardLink,
-  CardText,
   Row,
   Col,
 } from 'reactstrap';
@@ -35,7 +34,7 @@ type Result = {
     name: string,
     salience: number,
     sentiment: Sentiment,
-    metadata: { wikipedia_url?: string },
+    metadata?: { wikipedia_url?: string },
     mentions: Array<{
       sentiment: Sentiment,
       text: Text,
@@ -150,7 +149,7 @@ const NLPTabs = ({ activeTab, setActiveTab, results }: Props) => {
                     <strong>Salience:</strong>
                     <small className="pl-1">{round(entity.salience, PRECISION)}</small>
                   </div>
-                  {entity.metadata.wikipedia_url && (
+                  {entity.metadata && entity.metadata.wikipedia_url && (
                     <CardLink href={entity.metadata.wikipedia_url} target="_blank">
                       Wikipedia Article
                     </CardLink>

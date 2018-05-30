@@ -17,7 +17,7 @@ import {
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import Field from '../components/field';
-import { firestore } from '../firebase';
+import { database } from '../firebase';
 import Loading from '../components/loading';
 
 const required = value => (value ? undefined : 'Required');
@@ -50,32 +50,24 @@ class CalendarPage extends Component<Props, State> {
   };
 
   componentDidMount() {
-    let events = new Map();
-
-    this.eventListenerUnsubscribe = firestore.collection('events').onSnapshot((snapshot) => {
-      snapshot.docChanges().forEach(({ type, doc }) => {
-        if (type === 'removed') {
-          events = events.delete(doc.id);
-        } else {
-          const { start, end, ...data } = doc.data();
-          events = events.set(doc.id, {
-            ...data,
-            start: start.toDate(),
-            end: end.toDate(),
-            id: doc.id,
-          });
-        }
-      });
+    this.eventsRef = database.ref('events');
+    this.eventsRef.on('value', (snapshot) => {
+      const events = new Map(snapshot.val()).mapEntries(([id, event]) => [id, {
+        ...event,
+        start: moment.utc(event.start).toDate(),
+        end: moment.utc(event.end).toDate(),
+        id,
+      }]);
 
       this.setState({ events, loading: false });
     });
   }
 
   componentWillUnmount() {
-    if (this.eventListenerUnsubscribe) this.eventListenerUnsubscribe();
+    if (this.eventsRef) this.eventsRef.off();
   }
 
-  eventListenerUnsubscribe: ?(() => void);
+  eventsRef: ?any;
 
   selectSlot = (slot) => {
     const { start, end, action } = slot;
@@ -96,18 +88,23 @@ class CalendarPage extends Component<Props, State> {
   }
 
   deleteEvent = () => {
-    firestore.collection('events').doc(this.state.editing.id).delete();
+    database.ref('events').child(this.state.editing.id).remove();
 
     this.closeModal();
   };
 
-  saveEvent = async ({ id, ...event }) => {
-    const collection = firestore.collection('events');
+  saveEvent = async ({ id, ...eventData }) => {
+    const collection = database.ref('events');
+    const event = {
+      ...eventData,
+      start: moment.utc(eventData.start).format(),
+      end: moment.utc(eventData.end).format(),
+    };
 
     if (id) {
-      collection.doc(id).set(event);
+      collection.child(id).set(event);
     } else {
-      collection.add(event);
+      collection.push().set(event);
     }
 
     this.closeModal();

@@ -9,9 +9,9 @@ const client = new language.LanguageServiceClient({
 });
 
 // eslint-disable-next-line import/prefer-default-export
-export const processLanguage = functions.firestore.document('documents/{id}')
+export const processLanguage = functions.database.ref('documents/{id}')
   .onCreate(async (snapshot) => {
-    const { content, type = 'PLAIN_TEXT' } = snapshot.data();
+    const { content, type = 'PLAIN_TEXT' } = snapshot.val();
 
     try {
       const features = {
@@ -28,8 +28,8 @@ export const processLanguage = functions.firestore.document('documents/{id}')
         encodingType: 'UTF8',
       });
 
-      return snapshot.ref.set({ type, results }, { merge: true });
+      await snapshot.ref.update({ type, results });
     } catch (error) {
-      return snapshot.ref.set({ type, error: error.message }, { merge: true });
+      await snapshot.ref.update({ type, error: error.message });
     }
   });
