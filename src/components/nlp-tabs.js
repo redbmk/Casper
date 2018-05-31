@@ -167,22 +167,26 @@ const NLPTabs = ({ activeTab, setActiveTab, results }: Props) => {
         </TabPane>
         <TabPane tabId="sentiment">
           <SentimentRow isHeader sentiment={documentSentiment} text="Entire Document" />
-          {sentences.map(sentence => <SentimentRow key={uuid()} {...sentence} />)}
+          <Pager items={sentences} wrapper={PagingWrapper}>
+            {({ items }) => items.map(sentence => <SentimentRow key={uuid()} {...sentence} />)}
+          </Pager>
         </TabPane>
         <TabPane tabId="categories">
           {categories.length ? (
             <Row className="pt-3">
-              {categories.map(category => (
-                <Col key={category.name} className="pb-3" lg={6}>
-                  <Card body className="h-100">
-                    <CardTitle>{category.name}</CardTitle>
-                    <div>
-                      <strong>Confidence:</strong>
-                      <small className="pl-1">{round(category.confidence, PRECISION)}</small>
-                    </div>
-                  </Card>
-                </Col>
-              ))}
+              <Pager items={categories} wrapper={PagingWrapper}>
+                {({ items }) => items.map(category => (
+                  <Col key={category.name} className="pb-3" lg={6}>
+                    <Card body className="h-100">
+                      <CardTitle>{category.name}</CardTitle>
+                      <div>
+                        <strong>Confidence:</strong>
+                        <small className="pl-1">{round(category.confidence, PRECISION)}</small>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Pager>
             </Row>
           ) : (
             <h4 className="pt-3">No categories found.</h4>

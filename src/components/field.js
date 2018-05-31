@@ -10,6 +10,7 @@ import {
   Label,
   Input,
 } from 'reactstrap';
+import { Typeahead } from 'react-bootstrap-typeahead';
 
 import DateTimePicker from './date-time-picker';
 
@@ -48,8 +49,18 @@ const Field = ({
         <Label for={id}>{labelString}</Label>
         <DateTimePicker
           {...input}
+          value={input.value || null}
           {...props}
         />
+      </FormGroup>
+    );
+  }
+
+  if (type === 'select') {
+    return (
+      <FormGroup>
+        <Label for={id}>{labelString}</Label>
+        <Typeahead {...input} selected={input.value || []} {...props} />
       </FormGroup>
     );
   }

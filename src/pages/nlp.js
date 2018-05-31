@@ -14,6 +14,7 @@ import {
 import { Form } from 'react-final-form';
 import { Map } from 'immutable';
 import moment from 'moment';
+import { diff } from 'deep-object-diff';
 
 import Loading from '../components/loading';
 import Field from '../components/field';
@@ -43,55 +44,63 @@ const required = value => (value ? undefined : 'Required');
 
 type Props = {};
 type State = {
-  editing: bool,
+  editing: any,
   loading: bool,
   deleting: bool,
-  viewing?: any,
   documents: Map<string, any>,
 };
 
 export default class NaturalLanguageProcessingPage extends Component<Props, State> {
   state = {
     loading: true,
-    editing: false,
+    editing: null,
     deleting: false,
     documents: new Map(),
   };
 
   componentDidMount() {
-    this.documentsRef = database.ref('documents');
-    this.documentsRef.on('value', (snapshot) => {
+    const docRef = database.ref('documents');
+    docRef.on('value', (snapshot) => {
       this.setState({ documents: new Map(snapshot.val()), loading: false });
     });
+
+    const metadataRef = database.ref('metadata');
+    metadataRef.on('value', (snapshot) => {
+      const { contentTypes, keyTopics } = snapshot.val();
+      this.setState({ contentTypes, keyTopics });
+    });
+
+    this.dbRefs = [docRef, metadataRef];
   }
 
   componentWillUnmount() {
-    if (this.documentsRef) this.documentsRef.off();
+    this.dbRefs.forEach(ref => ref.off());
   }
 
-  documentsRef: ?any;
-
-  closeViewer = () => {
-    this.setState({ viewing: null });
-  }
+  dbRefs: Array<any> = [];
 
   openEditor = () => {
     this.setState({ editing: true });
   }
 
   closeEditor = () => {
-    this.setState({ editing: false });
+    this.setState({ editing: null });
   }
 
   cancelDelete = () => {
     this.setState({ deleting: false });
   }
 
-  addEntry = async (doc) => {
-    database.ref('documents').push().set({
-      ...doc,
-      uploadedAt: moment.utc().format(),
-    });
+  saveEntry = async (doc, form) => {
+    if (this.state.editing === true) {
+      database.ref('documents').push().set(doc);
+    } else if (this.state.editing) {
+      const changes = new Map(diff(form.getState().initialValues, doc))
+        .map(value => (value == null ? null : value))
+        .toJS();
+
+      database.ref('documents').child(this.state.editing).update(changes);
+    }
     this.closeEditor();
   }
 
@@ -100,78 +109,96 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
   }
 
   actuallyDeleteEntry = async () => {
-    database.ref('documents').child(this.state.viewing).remove();
-    this.setState({ viewing: null, deleting: false });
+    database.ref('documents').child(this.state.editing).remove();
+    this.setState({ editing: null, deleting: false });
   }
 
-  renderEntryForm = ({ handleSubmit, invalid }) => (
-    <WideModal isOpen toggle={this.closeEditor} autoFocus={false}>
-      <form onSubmit={handleSubmit}>
-        <ModalHeader toggle={this.closeEditor}>
-          <Field name="title">
-            {({ input: { value } }) => value || <small>Add a new entry</small>}
-          </Field>
-        </ModalHeader>
-        <ModalBody>
-          <Field name="title" autoFocus validate={required} />
-          <Field
-            name="content"
-            label="Text"
-            type="textarea"
-            rows={20}
-            validate={required}
-            placeholder="Enter text to process"
-          />
-        </ModalBody>
-        <ModalFooter>
-          <Button color="primary" disabled={invalid}>Save</Button>
-          <Button color="secondary" onClick={this.closeEditor}>Cancel</Button>
-        </ModalFooter>
-      </form>
-    </WideModal>
-  );
-
-  renderDetails = () => {
-    const doc = this.state.documents.get(this.state.viewing);
+  renderEntryForm = ({ handleSubmit, invalid, values }) => {
+    const isNew = this.state.editing === true;
 
     return (
-      <WideModal isOpen toggle={this.closeViewer}>
-        <ModalHeader toggle={this.closeViewer}>{doc.title}</ModalHeader>
-        <ModalBody>
-          <h4>Content</h4>
-          <Content>{doc.content}</Content>
-          {!doc.results && !doc.error && (
-            <h4><Loading text="Processing results..." /></h4>
-          )}
-          {!!doc.results && (
-            <Fragment>
-              <h4>Results</h4>
-              <NLPTabs results={doc.results} />
-            </Fragment>
-          )}
-          {!!doc.error && (
-            <Alert color="danger">
-              <h4 className="alert-heading">Error</h4>
-              <p>{doc.error}</p>
-            </Alert>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          <Button
-            color="danger"
-            onClick={this.deleteEntry}
-            disabled={!doc.error && !doc.results}
-          >
-            Delete
-          </Button>
-          <Button color="secondary" onClick={this.closeViewer}>Close</Button>
-        </ModalFooter>
+      <WideModal isOpen toggle={this.closeEditor} autoFocus={!isNew}>
+        <form onSubmit={handleSubmit}>
+          <ModalHeader toggle={this.closeEditor}>
+            <Field name="title">
+              {({ input: { value } }) => value || (isNew && <small>Add a new entry</small>)}
+            </Field>
+          </ModalHeader>
+          <ModalBody>
+            <Field name="title" autoFocus={isNew} validate={required} />
+            <Field name="headline" type="textarea" rows={3} />
+            <Field
+              name="date"
+              type="date"
+              time
+              parse={value => value && moment.utc(value).format()}
+              format={value => value && moment.utc(value).toDate()}
+            />
+            <Field
+              name="contentType"
+              type="select"
+              options={this.state.contentTypes}
+              parse={value => value && value[0]}
+              format={value => value && [value]}
+              clearButton
+            />
+            <Field
+              name="keyTopics"
+              type="select"
+              options={this.state.keyTopics}
+              multiple
+              clearButton
+            />
+            {isNew ? (
+              <Field
+                name="content"
+                type="textarea"
+                rows={20}
+                validate={required}
+                placeholder="Enter text to process"
+              />
+            ) : (
+              <Fragment>
+                <h4>Content</h4>
+                <Content>{values.content}</Content>
+                {!values.results && !values.error && (
+                  <h4><Loading text="Processing results..." /></h4>
+                )}
+                {!!values.results && (
+                  <Fragment>
+                    <h4>Results</h4>
+                    <NLPTabs results={values.results} />
+                  </Fragment>
+                )}
+                {!!values.error && (
+                  <Alert color="danger">
+                    <h4 className="alert-heading">Error</h4>
+                    <p>{values.error}</p>
+                  </Alert>
+                )}
+              </Fragment>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" disabled={invalid}>Save</Button>
+            {!isNew && (
+              <Button
+                color="danger"
+                onClick={this.deleteEntry}
+                disabled={!values.error && !values.results}
+              >
+                Delete
+              </Button>
+            )}
+            <Button color="secondary" onClick={this.closeEditor}>Cancel</Button>
+          </ModalFooter>
+        </form>
       </WideModal>
     );
-  }
+  };
 
   renderDeleteConfirmation = () => {
-    const doc = this.state.documents.get(this.state.viewing);
+    const doc = this.state.documents.get(this.state.editing);
 
     return (
       <Modal isOpen toggle={this.cancelDelete}>
@@ -200,7 +227,6 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
       loading,
       editing,
       documents,
-      viewing,
       deleting,
     } = this.state;
 
@@ -212,9 +238,10 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
         <Table>
           <thead>
             <tr>
+              <th>Date</th>
               <th>Title</th>
-              <th>Date Uploaded</th>
-              <th>Snippet</th>
+              <th>Content Type</th>
+              <th>Key Topics</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -231,21 +258,22 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
               <td />
               <td />
             </tr>
-            {documents.sortBy(doc => doc.uploadedAt).reverse().entrySeq().map(([id, doc]) => (
-              <EntryRow key={id} onClick={() => this.setState({ viewing: id })}>
+            {documents.sortBy(doc => doc.date).reverse().entrySeq().map(([id, doc]) => (
+              <EntryRow key={id} onClick={() => this.setState({ editing: id })}>
+                <td>{doc.date && moment(doc.date).format('LLL')}</td>
                 <td>{doc.title}</td>
-                <td>{moment(doc.uploadedAt).format('LLL')}</td>
-                <td>{doc.content}</td>
+                <td>{doc.contentType}</td>
+                <td>{doc.keyTopics && doc.keyTopics.join(', ')}</td>
                 <td>{this.renderDocStatus(doc)}</td>
               </EntryRow>
             ))}
           </tbody>
         </Table>
-        {viewing && this.renderDetails()}
         {deleting && this.renderDeleteConfirmation()}
         {editing && (
           <Form
-            onSubmit={this.addEntry}
+            initialValues={documents.get(editing) || { date: moment.utc().format() }}
+            onSubmit={this.saveEntry}
             render={this.renderEntryForm}
           />
         )}
