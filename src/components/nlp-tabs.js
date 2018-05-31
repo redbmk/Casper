@@ -1,6 +1,6 @@
 /* @flow */
 
-import React from 'react';
+import React, { type Node } from 'react';
 import { withState } from 'recompose';
 import uuid from 'uuid';
 import {
@@ -16,6 +16,8 @@ import {
   Col,
 } from 'reactstrap';
 import { round, capitalize } from 'lodash';
+
+import Pager from './pager';
 
 const PRECISION = 3;
 
@@ -95,6 +97,8 @@ SentimentRow.defaultProps = {
   isHeader: false,
 };
 
+const PagingWrapper = ({ children }: { children: Node }) => <Col xs={12}>{children}</Col>;
+
 type Props = {
   results: Result,
   activeTab: string,
@@ -134,29 +138,31 @@ const NLPTabs = ({ activeTab, setActiveTab, results }: Props) => {
       <TabContent activeTab={activeTab}>
         <TabPane tabId="entities">
           <Row className="pt-3">
-            {entities.map(entity => (
-              <Col className="pb-3" key={uuid()} lg={6}>
-                <Card body className="h-100">
-                  <CardTitle>{entity.name}</CardTitle>
-                  <div>
-                    <strong>Sentiment:</strong>
-                    <small>
-                      <strong className="pl-1">Magnitude</strong> {round(entity.sentiment.magnitude, PRECISION)}
-                      <strong className="pl-1">Score</strong> {round(entity.sentiment.score, PRECISION)}
-                    </small>
-                  </div>
-                  <div>
-                    <strong>Salience:</strong>
-                    <small className="pl-1">{round(entity.salience, PRECISION)}</small>
-                  </div>
-                  {entity.metadata && entity.metadata.wikipedia_url && (
-                    <CardLink href={entity.metadata.wikipedia_url} target="_blank">
-                      Wikipedia Article
-                    </CardLink>
-                  )}
-                </Card>
-              </Col>
-            ))}
+            <Pager items={entities} wrapper={PagingWrapper}>
+              {({ items }) => items.map(entity => (
+                <Col className="pb-3" key={uuid()} lg={6}>
+                  <Card body className="h-100">
+                    <CardTitle>{entity.name}</CardTitle>
+                    <div>
+                      <strong>Sentiment:</strong>
+                      <small>
+                        <strong className="pl-1">Magnitude</strong> {round(entity.sentiment.magnitude, PRECISION)}
+                        <strong className="pl-1">Score</strong> {round(entity.sentiment.score, PRECISION)}
+                      </small>
+                    </div>
+                    <div>
+                      <strong>Salience:</strong>
+                      <small className="pl-1">{round(entity.salience, PRECISION)}</small>
+                    </div>
+                    {entity.metadata && entity.metadata.wikipedia_url && (
+                      <CardLink href={entity.metadata.wikipedia_url} target="nlp-wikipedia">
+                        Wikipedia Article
+                      </CardLink>
+                    )}
+                  </Card>
+                </Col>
+              ))}
+            </Pager>
           </Row>
         </TabPane>
         <TabPane tabId="sentiment">

@@ -1,6 +1,12 @@
 {
     "parser": "babel-eslint",
     "extends": "airbnb",
+    "settings": {
+        "react": {
+            "pragma": "React",
+            "version": "16.4"
+        }
+    },
     "globals": {
         "window": true,
         "document": true
