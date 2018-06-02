@@ -120,13 +120,10 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
       <WideModal isOpen toggle={this.closeEditor} autoFocus={!isNew}>
         <form onSubmit={handleSubmit}>
           <ModalHeader toggle={this.closeEditor}>
-            <Field name="title">
-              {({ input: { value } }) => value || (isNew && <small>Add a new entry</small>)}
-            </Field>
+            {values.title || <i>(Add a new entry)</i>}
           </ModalHeader>
           <ModalBody>
             <Field name="title" autoFocus={isNew} validate={required} />
-            <Field name="headline" type="textarea" rows={3} />
             <Field
               name="date"
               type="date"
@@ -147,6 +144,7 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
               multiple
               clearButton
             />
+            <Field name="headline" type="textarea" rows={3} />
             {isNew ? (
               <Field
                 name="content"

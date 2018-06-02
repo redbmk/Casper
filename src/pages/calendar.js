@@ -7,6 +7,7 @@ import RBC from 'react-big-calendar';
 import { Map, Set } from 'immutable';
 import { Form } from 'react-final-form';
 import {
+  Alert,
   Button,
   Form as BootstrapForm,
   Modal,
@@ -25,10 +26,21 @@ import Loading from '../components/loading';
 import textToColor from '../utils/color-generator';
 import storage from '../utils/local-storage';
 import Checkbox from '../components/checkbox';
+import NLPTabs from '../components/nlp-tabs';
 
 const required = value => (value ? undefined : 'Required');
+const NATURAL_LANGUAGE_CATEGORY_NAME = 'Natural Language';
 
 RBC.setLocalizer(RBC.momentLocalizer(moment));
+
+const WideModal = styled(Modal)`
+  min-width: 80vw;
+`;
+
+const Content = styled.pre`
+  white-space: pre-wrap;
+  max-height: 300px;
+`;
 
 const FullPage = styled.div`
   display: flex;
@@ -59,29 +71,32 @@ const CategoryFieldWrapper = styled.div`
 
 const getEventStyle = event => ({
   style: {
-    backgroundColor: textToColor(event.category),
+    backgroundColor: textToColor(event.isNLP ? NATURAL_LANGUAGE_CATEGORY_NAME : event.category),
   },
 });
 
 type Props = {};
 type State = {
   events: Map<string, any>,
+  nlpEvents: Map<string, any>,
   loading: bool,
   newCategoryColor?: string,
   hiddenCategories: Set<string>,
+  selected: any,
 };
 
 class CalendarPage extends Component<Props, State> {
   state = {
     events: new Map(),
+    nlpEvents: new Map(),
     loading: true,
     newCategoryColor: null,
     hiddenCategories: new Set(storage.get('hiddenCategories')),
   };
 
   componentDidMount() {
-    this.eventsRef = database.ref('events');
-    this.eventsRef.on('value', (snapshot) => {
+    const eventsRef = database.ref('events');
+    eventsRef.on('value', (snapshot) => {
       const events = new Map(snapshot.val()).mapEntries(([id, event]) => [id, {
         ...event,
         start: moment.utc(event.start).toDate(),
@@ -91,17 +106,34 @@ class CalendarPage extends Component<Props, State> {
 
       this.setState({ events, loading: false });
     });
+
+    const docRef = database.ref('documents');
+    docRef.on('value', (snapshot) => {
+      const nlpEvents = new Map(snapshot.val()).mapEntries(([id, doc]) => [id, {
+        ...doc,
+        isNLP: true,
+        allDay: true,
+        start: moment.utc(doc.date).toDate(),
+        end: moment.utc(doc.date).toDate(),
+        id,
+      }]);
+
+      this.setState({ nlpEvents, loading: false });
+    });
+
+    this.dbRefs = [eventsRef, docRef];
   }
 
   componentWillUnmount() {
-    if (this.eventsRef) this.eventsRef.off();
+    this.dbRefs.forEach(ref => ref.off());
   }
 
-  get filteredEvents() {
-    const { hiddenCategories, events } = this.state;
+  get calendarEvents() {
+    const { nlpEvents, hiddenCategories, events } = this.state;
 
     return events
       .filter(({ category }) => !hiddenCategories.has(category || null))
+      .merge(hiddenCategories.has(NATURAL_LANGUAGE_CATEGORY_NAME) ? {} : nlpEvents)
       .toArray();
   }
 
@@ -112,13 +144,13 @@ class CalendarPage extends Component<Props, State> {
     .sort()
     .toArray();
 
-  eventsRef: ?any;
+  dbRefs: Array<any> = [];
 
   selectSlot = (slot) => {
     const { start, end, action } = slot;
     if (['click', 'select'].includes(action)) {
       this.setState({
-        editing: {
+        selected: {
           start,
           end,
           allDay: moment(start).startOf('day').isSame(start) &&
@@ -129,11 +161,11 @@ class CalendarPage extends Component<Props, State> {
   }
 
   selectEvent = (event) => {
-    this.setState({ editing: event });
+    this.setState({ selected: event });
   }
 
   deleteEvent = () => {
-    database.ref('events').child(this.state.editing.id).remove();
+    database.ref('events').child(this.state.selected.id).remove();
 
     this.closeModal();
   };
@@ -156,7 +188,7 @@ class CalendarPage extends Component<Props, State> {
   };
 
   closeModal = () => {
-    this.setState({ editing: null });
+    this.setState({ selected: null });
   };
 
   updateNewCategoryColor = (text) => {
@@ -192,7 +224,7 @@ class CalendarPage extends Component<Props, State> {
     <Modal isOpen toggle={this.closeModal} autoFocus={false}>
       <form onSubmit={handleSubmit}>
         <ModalHeader toggle={this.closeModal}>
-          {values.title || '(New Event)'}
+          {values.title || <i>(New Event)</i>}
         </ModalHeader>
         <ModalBody>
           <Field name="title" autoFocus validate={required} />
@@ -235,7 +267,7 @@ class CalendarPage extends Component<Props, State> {
   );
 
   render() {
-    const { editing, loading, hiddenCategories } = this.state;
+    const { selected, loading, hiddenCategories } = this.state;
 
     if (loading) {
       return (
@@ -245,12 +277,12 @@ class CalendarPage extends Component<Props, State> {
       );
     }
 
-    const categories = this.getCategories();
+    const categories = [NATURAL_LANGUAGE_CATEGORY_NAME, ...this.getCategories()];
 
     return (
       <FullPage>
         <BigCalendar
-          events={this.filteredEvents}
+          events={this.calendarEvents}
           eventPropGetter={getEventStyle}
           selectable
           popup
@@ -283,9 +315,59 @@ class CalendarPage extends Component<Props, State> {
             />
           ))}
         </BootstrapForm>
-        {editing && (
+        {selected && selected.isNLP && (
+          <WideModal isOpen toggle={this.closeModal}>
+            <ModalHeader toggle={this.closeModal}>
+              {selected.title || <i>(No title)</i>}
+            </ModalHeader>
+            <ModalBody>
+              {selected.date && (
+                <Fragment>
+                  <h4>Date</h4>
+                  <Content>{moment.utc(selected.date).format('LLL')}</Content>
+                </Fragment>
+              )}
+              {selected.contentType && (
+                <Fragment>
+                  <h4>Content Type</h4>
+                  <Content>{selected.contentType}</Content>
+                </Fragment>
+              )}
+              {selected.keyTopics && selected.keyTopics.length && (
+                <Fragment>
+                  <h4>Key Topics</h4>
+                  <Content>{selected.keyTopics.join(', ')}</Content>
+                </Fragment>
+              )}
+              {selected.headline && (
+                <Fragment>
+                  <h4>Headline</h4>
+                  <Content>{selected.headline}</Content>
+                </Fragment>
+              )}
+              <h4>Content</h4>
+              <Content>{selected.content}</Content>
+              {!selected.results && !selected.error && (
+                <h4><Loading text="Processing results..." /></h4>
+              )}
+              {!!selected.results && (
+                <Fragment>
+                  <h4>Results</h4>
+                  <NLPTabs results={selected.results} />
+                </Fragment>
+              )}
+              {!!selected.error && (
+                <Alert color="danger">
+                  <h4 className="alert-heading">Error</h4>
+                  <p>{selected.error}</p>
+                </Alert>
+              )}
+            </ModalBody>
+          </WideModal>
+        )}
+        {selected && !selected.isNLP && (
           <Form
-            initialValues={editing}
+            initialValues={selected}
             onSubmit={this.saveEvent}
             render={this.renderEventEditor}
           />
