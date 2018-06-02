@@ -1,24 +1,30 @@
 /* @flow */
 
 import React, { Component, Fragment } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import moment from 'moment';
 import RBC from 'react-big-calendar';
-import { Map } from 'immutable';
+import { Map, Set } from 'immutable';
 import { Form } from 'react-final-form';
 import {
   Button,
+  Form as BootstrapForm,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Label,
 } from 'reactstrap';
+import { Highlighter } from 'react-bootstrap-typeahead';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 import Field from '../components/field';
 import { database } from '../firebase';
 import Loading from '../components/loading';
+import textToColor from '../utils/color-generator';
+import storage from '../utils/local-storage';
+import Checkbox from '../components/checkbox';
 
 const required = value => (value ? undefined : 'Required');
 
@@ -37,16 +43,40 @@ const BigCalendar = styled(RBC)`
   font-size: 12px;
 `;
 
+const CategoryFieldWrapper = styled.div`
+  ${props => props.selected && css`
+    .rbt-input-main.form-control {
+      color: ${textToColor(props.selected)};
+    }
+  `};
+
+  ${props => props.newSelectionColor && css`
+    .rbt-menu-custom-option span {
+      color: ${props.newSelectionColor};
+    }
+  `};
+`;
+
+const getEventStyle = event => ({
+  style: {
+    backgroundColor: textToColor(event.category),
+  },
+});
+
 type Props = {};
 type State = {
   events: Map<string, any>,
   loading: bool,
+  newCategoryColor?: string,
+  hiddenCategories: Set<string>,
 };
 
 class CalendarPage extends Component<Props, State> {
   state = {
     events: new Map(),
     loading: true,
+    newCategoryColor: null,
+    hiddenCategories: new Set(storage.get('hiddenCategories')),
   };
 
   componentDidMount() {
@@ -66,6 +96,21 @@ class CalendarPage extends Component<Props, State> {
   componentWillUnmount() {
     if (this.eventsRef) this.eventsRef.off();
   }
+
+  get filteredEvents() {
+    const { hiddenCategories, events } = this.state;
+
+    return events
+      .filter(({ category }) => !hiddenCategories.has(category || null))
+      .toArray();
+  }
+
+  getCategories = (selected: ?string) => this.state.events.toSet()
+    .map(event => event.category || null)
+    .add(selected || null)
+    .remove(null)
+    .sort()
+    .toArray();
 
   eventsRef: ?any;
 
@@ -114,16 +159,58 @@ class CalendarPage extends Component<Props, State> {
     this.setState({ editing: null });
   };
 
-  renderEventEditor = ({ handleSubmit, invalid }) => (
+  updateNewCategoryColor = (text) => {
+    this.setState({ newCategoryColor: text && textToColor(text) });
+  };
+
+  resetHiddenCategories = () => {
+    storage.set('hiddenCategories', null);
+    this.setState({ hiddenCategories: new Set() });
+  };
+
+  toggleHiddenCategory = (category) => {
+    this.setState((state) => {
+      const hiddenCategories = state.hiddenCategories.has(category)
+        ? state.hiddenCategories.remove(category)
+        : state.hiddenCategories.add(category);
+
+      storage.set('hiddenCategories', hiddenCategories.toArray());
+
+      return { hiddenCategories };
+    });
+  };
+
+  renderCategoryOption = (option, props) => (
+    <div style={{ color: textToColor(option) }}>
+      <Highlighter search={props.text}>
+        {option}
+      </Highlighter>
+    </div>
+  );
+
+  renderEventEditor = ({ handleSubmit, invalid, values }) => (
     <Modal isOpen toggle={this.closeModal} autoFocus={false}>
       <form onSubmit={handleSubmit}>
         <ModalHeader toggle={this.closeModal}>
-          <Field name="title">
-            {({ input: { value } }) => value || '(no name)'}
-          </Field>
+          {values.title || '(New Event)'}
         </ModalHeader>
         <ModalBody>
           <Field name="title" autoFocus validate={required} />
+          <CategoryFieldWrapper
+            selected={values.category}
+            newSelectionColor={this.state.newCategoryColor}
+          >
+            <Field
+              name="category"
+              type="select"
+              newSelectionPrefix="New category: "
+              simple
+              allowNew
+              options={this.getCategories(values.category)}
+              renderMenuItemChildren={this.renderCategoryOption}
+              onInputChange={this.updateNewCategoryColor}
+            />
+          </CategoryFieldWrapper>
           <Field name="allDay" type="checkbox" />
           <Field name="allDay">
             {({ input: { value: allDay } }) => (
@@ -148,7 +235,7 @@ class CalendarPage extends Component<Props, State> {
   );
 
   render() {
-    const { events, editing, loading } = this.state;
+    const { editing, loading, hiddenCategories } = this.state;
 
     if (loading) {
       return (
@@ -158,10 +245,13 @@ class CalendarPage extends Component<Props, State> {
       );
     }
 
+    const categories = this.getCategories();
+
     return (
       <FullPage>
         <BigCalendar
-          events={events.toArray()}
+          events={this.filteredEvents}
+          eventPropGetter={getEventStyle}
           selectable
           popup
           defaultDate={new Date()}
@@ -169,6 +259,30 @@ class CalendarPage extends Component<Props, State> {
           onSelectEvent={this.selectEvent}
           onNavigate={this.loadEvents}
         />
+        <Label><b>Categories</b></Label>
+        <BootstrapForm inline>
+          <Checkbox
+            label={<b className={!hiddenCategories.size ? 'text-muted' : ''}>Show all</b>}
+            checked={!hiddenCategories.size}
+            disabled={!hiddenCategories.size}
+            onChange={this.resetHiddenCategories}
+          />
+          <Checkbox
+            label={<i>Uncategorized</i>}
+            color={textToColor()}
+            checked={!hiddenCategories.has(null)}
+            onChange={() => this.toggleHiddenCategory(null)}
+          />
+          {categories.map(category => (
+            <Checkbox
+              key={category}
+              label={category}
+              color={textToColor(category)}
+              checked={!hiddenCategories.has(category)}
+              onChange={() => this.toggleHiddenCategory(category)}
+            />
+          ))}
+        </BootstrapForm>
         {editing && (
           <Form
             initialValues={editing}

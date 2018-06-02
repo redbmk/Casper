@@ -70,6 +70,7 @@
     },
     "dependencies": {
         "bootstrap": "^4.1.1",
+        "classnames": "^2.2.5",
         "deep-object-diff": "^1.1.0",
         "final-form": "^4.6.1",
         "firebase": "^5.0.2",

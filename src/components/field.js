@@ -13,6 +13,7 @@ import {
 import { Typeahead } from 'react-bootstrap-typeahead';
 
 import DateTimePicker from './date-time-picker';
+import Checkbox from './checkbox';
 
 type Props = {
   type?: string,
@@ -31,16 +32,7 @@ const Field = ({
   const labelString = label || startCase(input.name);
 
   if (type === 'checkbox') {
-    return (
-      <FormGroup>
-        <FormGroup check>
-          <Label check>
-            <Input invalid={meta.invalid} {...input} {...props} type="checkbox" />
-            &nbsp;{labelString}
-          </Label>
-        </FormGroup>
-      </FormGroup>
-    );
+    return <Checkbox invalid={meta.invalid} {...input} {...props} label={labelString} />;
   }
 
   if (type === 'date') {
@@ -57,10 +49,21 @@ const Field = ({
   }
 
   if (type === 'select') {
+    const onBlur = (event) => {
+      if (props.simple && props.allowNew) {
+        input.onChange([...(props.multiple ? input.value : []), event.target.value]);
+      }
+    };
+
     return (
       <FormGroup>
         <Label for={id}>{labelString}</Label>
-        <Typeahead {...input} selected={input.value || []} {...props} />
+        <Typeahead
+          {...input}
+          onBlur={onBlur}
+          selected={input.value}
+          {...props}
+        />
       </FormGroup>
     );
   }
@@ -74,4 +77,17 @@ const Field = ({
   );
 };
 
-export default (props: any) => <FinalFormField {...props} component={Field} />;
+const singleSelectModifiers = ({ type, multiple, simple }) => (type === 'select' && !multiple ? {
+  parse: value => value &&
+    value[0] &&
+    (simple && value[0].customOption ? value[0].label : value[0]),
+  format: value => (value ? [value] : []),
+} : {});
+
+export default (props: any) => (
+  <FinalFormField
+    {...singleSelectModifiers(props)}
+    {...props}
+    component={Field}
+  />
+);

@@ -138,8 +138,6 @@ export default class NaturalLanguageProcessingPage extends Component<Props, Stat
               name="contentType"
               type="select"
               options={this.state.contentTypes}
-              parse={value => value && value[0]}
-              format={value => value && [value]}
               clearButton
             />
             <Field
